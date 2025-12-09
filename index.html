@@ -610,6 +610,39 @@
                         hideOverpriced: true  // NEW: hide overpriced listings
                     },
 
+                    // NEW: Listings feed (matching apartments)
+                    listings: [
+                        {
+                            id: 'apt1',
+                            photo: 'https://via.placeholder.com/350x200',
+                            price: 6500,
+                            address: 'Dizengoff St. 125',
+                            city: 'Tel Aviv',
+                            rooms: 3,
+                            size: 90,
+                            floor: 3,
+                            dealScore: { emoji: '🔥', label: 'HOT DEAL', color: 'text-green-400' },
+                            phone: '050-1234567',
+                            isPrivate: true,
+                            link: 'https://www.yad2.co.il/realestate/item/abc123'
+                        },
+                        {
+                            id: 'apt2',
+                            photo: 'https://via.placeholder.com/350x200',
+                            price: 7800,
+                            address: 'Ben Yehuda St. 88',
+                            city: 'Tel Aviv',
+                            rooms: 2,
+                            size: 65,
+                            floor: 5,
+                            dealScore: { emoji: '✅', label: 'Fair Price', color: 'text-blue-400' },
+                            phone: '054-9876543',
+                            isPrivate: false,
+                            link: 'https://www.yad2.co.il/realestate/item/def456'
+                        }
+                    ],
+                    showFilters: true,  // Toggle filters visibility
+
                     // Favorites
                     favorites: [
                         {
@@ -696,8 +729,18 @@
                         }
                     };
 
+                    // Show in-app notification
+                    window.Telegram.WebApp.showPopup({
+                        title: '✅ Filters Saved!',
+                        message: 'Your preferences have been updated. Checking for matches...',
+                        buttons: [{ type: 'ok' }]
+                    });
+
                     // Send to bot
                     window.Telegram.WebApp.sendData(JSON.stringify(data));
+
+                    // Optionally: Switch to a "Feed" view after saving
+                    // this.activeTab = 'home';  // Stay on home or switch to feed
                 },
 
                 removeFavorite(id) {
