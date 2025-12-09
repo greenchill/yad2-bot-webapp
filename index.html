@@ -286,33 +286,49 @@
                         </div>
                     </div>
 
-                    <!-- City Selector -->
+                    <!-- City Selector - ALL MAJOR CITIES -->
                     <div class="card">
                         <label class="block text-sm font-semibold mb-3 text-gray-300">
                             🏙️ City
                         </label>
-                        <select v-model="filters.city" class="w-full px-4 py-3 bg-gray-800 rounded-lg text-white">
+                        <select v-model="filters.city" @change="filters.neighborhood = null" class="w-full px-4 py-3 bg-gray-800 rounded-lg text-white">
                             <option value="5000">Tel Aviv (תל אביב)</option>
                             <option value="8600">Jerusalem (ירושלים)</option>
                             <option value="6200">Haifa (חיפה)</option>
-                            <option value="6300">Netanya (נתניה)</option>
                             <option value="7900">Rishon LeZion (ראשון לציון)</option>
+                            <option value="6300">Netanya (נתניה)</option>
+                            <option value="7400">Petah Tikva (פתח תקווה)</option>
+                            <option value="2600">Ashdod (אשדוד)</option>
+                            <option value="1200">Ashkelon (אשקלון)</option>
+                            <option value="3000">Beersheba (באר שבע)</option>
+                            <option value="6400">Holon (חולון)</option>
+                            <option value="3797">Bat Yam (בת ים)</option>
+                            <option value="7600">Ramat Gan (רמת גן)</option>
+                            <option value="2610">Herzliya (הרצליה)</option>
+                            <option value="6700">Kfar Saba (כפר סבא)</option>
+                            <option value="2620">Hod HaSharon (הוד השרון)</option>
+                            <option value="7000">Raanana (רעננה)</option>
+                            <option value="9000">Rehovot (רחובות)</option>
+                            <option value="3600">Bnei Brak (בני ברק)</option>
+                            <option value="8300">Modi'in (מודיעין)</option>
+                            <option value="7300">Ramla (רמלה)</option>
+                            <option value="6900">Lod (לוד)</option>
+                            <option value="2200">Nahariya (נהריה)</option>
+                            <option value="3400">Beit Shemesh (בית שמש)</option>
+                            <option value="7100">Rosh HaAyin (ראש העין)</option>
                         </select>
                     </div>
 
-                    <!-- Neighborhood Selector (Tel Aviv only) -->
-                    <div v-if="filters.city === '5000'" class="card">
+                    <!-- Neighborhood Selector - Dynamic by City -->
+                    <div v-if="neighborhoods.length > 0" class="card">
                         <label class="block text-sm font-semibold mb-3 text-gray-300">
                             📍 Neighborhood (Optional)
                         </label>
                         <select v-model="filters.neighborhood" class="w-full px-4 py-3 bg-gray-800 rounded-lg text-white">
                             <option :value="null">All Neighborhoods</option>
-                            <option value="florentin">Florentin (פלורנטין)</option>
-                            <option value="neve-tzedek">Neve Tzedek (נווה צדק)</option>
-                            <option value="rothschild">Rothschild Area (רוטשילד)</option>
-                            <option value="dizengoff">Dizengoff Area (דיזנגוף)</option>
-                            <option value="old-north">Old North (הצפון הישן)</option>
-                            <option value="jaffa">Jaffa (יפו)</option>
+                            <option v-for="n in neighborhoods" :key="n.id" :value="n.id">
+                                {{ n.name }}
+                            </option>
                         </select>
                     </div>
 
@@ -678,7 +694,62 @@
                     },
 
                     // Map
-                    map: null
+                    map: null,
+
+                    // ✅ LOCATION DATA
+                    locationData: {
+                        '5000': [
+                            { id: 'florentin', name: 'Florentin (פלורנטין)' },
+                            { id: 'neve-tzedek', name: 'Neve Tzedek (נווה צדק)' },
+                            { id: 'rothschild', name: 'Rothschild Area (רוטשילד)' },
+                            { id: 'dizengoff', name: 'Dizengoff Area (דיזנגוף)' },
+                            { id: 'old-north', name: 'Old North (הצפון הישן)' },
+                            { id: 'jaffa', name: 'Jaffa (יפו)' },
+                            { id: 'ramat-aviv', name: 'Ramat Aviv (רמת אביב)' },
+                            { id: 'shapira', name: 'Shapira (שפירא)' },
+                            { id: 'kerem-hatemanim', name: 'Kerem HaTeimanim (כרם התימנים)' },
+                            { id: 'new-north', name: 'New North (צפון חדש)' },
+                            { id: 'bavli', name: 'Bavli (בבלי)' },
+                            { id: 'lev-hair', name: 'City Center (לב העיר)' }
+                        ],
+                        '8600': [
+                            { id: 'german-colony', name: 'German Colony (המושבה הגרמנית)' },
+                            { id: 'baka', name: 'Baka (בקעה)' },
+                            { id: 'talpiot', name: 'Talpiot (תלפיות)' },
+                            { id: 'katamon', name: 'Katamon (קטמון)' },
+                            { id: 'rechavia', name: 'Rehavia (רחביה)' },
+                            { id: 'nachlaot', name: 'Nachlaot (נחלאות)' },
+                            { id: 'gilo', name: 'Gilo (גילה)' },
+                            { id: 'arnona', name: 'Arnona (ארנונה)' },
+                            { id: 'pisgat-zeev', name: 'Pisgat Ze\'ev (פסגת זאב)' },
+                            { id: 'ramot', name: 'Ramot (רמות)' }
+                        ],
+                        '6200': [
+                            { id: 'carmel-center', name: 'Carmel Center (מרכז הכרמל)' },
+                            { id: 'hadar', name: 'Hadar HaCarmel (הדר הכרמל)' },
+                            { id: 'downtown', name: 'Downtown (מרכז העיר)' },
+                            { id: 'bat-galim', name: 'Bat Galim (בת גלים)' },
+                            { id: 'neve-shaanan', name: 'Neve Sha\'anan (נווה שאנן)' },
+                            { id: 'french-carmel', name: 'French Carmel (כרמל צרפתי)' }
+                        ],
+                        '7900': [
+                            { id: 'old-rishon', name: 'Old Rishon (ראשון הישנה)' },
+                            { id: 'west-rishon', name: 'West Rishon (ראשון מערב)' },
+                            { id: 'nahalat-yehuda', name: 'Nahalat Yehuda (נחלת יהודה)' }
+                        ],
+                        '6300': [
+                            { id: 'kiryat-hasharon', name: 'Kiryat HaSharon (קריית השרון)' },
+                            { id: 'ramat-poleg', name: 'Ramat Poleg (רמת פולג)' },
+                            { id: 'kiryat-sanz', name: 'Kiryat Sanz (קריית צאנז)' }
+                        ]
+                    }
+                }
+            },
+
+            computed: {
+                neighborhoods() {
+                    // Return neighborhoods for selected city
+                    return this.locationData[this.filters.city] || [];
                 }
             },
 
@@ -711,6 +782,9 @@
 
                 // Apply theme
                 document.body.style.backgroundColor = tg.themeParams.bg_color || '#0f172a';
+
+                // ✅ LOAD SAVED FILTERS from Telegram Cloud Storage
+                this.loadSavedFilters();
             },
 
             methods: {
@@ -740,11 +814,61 @@
                         buttons: [{ type: 'ok' }]
                     });
 
+                    // ✅ SAVE to Telegram Cloud Storage
+                    window.Telegram.WebApp.CloudStorage.setItem('filters', JSON.stringify(this.filters), (error) => {
+                        if (error) {
+                            console.error('Failed to save to Cloud Storage:', error);
+                        } else {
+                            console.log('✅ Saved to Cloud Storage:', this.filters);
+                        }
+                    });
+
                     // Send to bot
                     window.Telegram.WebApp.sendData(JSON.stringify(data));
 
                     // Optionally: Switch to a "Feed" view after saving
                     // this.activeTab = 'home';  // Stay on home or switch to feed
+                },
+
+                loadSavedFilters() {
+                    // ✅ LOAD from Telegram Cloud Storage
+                    console.log('📥 Loading saved filters from Cloud Storage...');
+
+                    window.Telegram.WebApp.CloudStorage.getItem('filters', (error, value) => {
+                        if (error) {
+                            console.error('Failed to load from Cloud Storage:', error);
+                            console.log('Using default filters');
+                            return;
+                        }
+
+                        if (value) {
+                            try {
+                                const savedFilters = JSON.parse(value);
+                                console.log('✅ Loaded saved filters:', savedFilters);
+
+                                // Update Vue reactive data
+                                this.filters.maxPrice = savedFilters.maxPrice || 12000;
+                                this.filters.exactRooms = savedFilters.exactRooms || null;
+                                this.filters.city = savedFilters.city || '5000';
+                                this.filters.neighborhood = savedFilters.neighborhood || null;
+                                this.filters.parking = savedFilters.parking || false;
+                                this.filters.balcony = savedFilters.balcony || false;
+                                this.filters.elevator = savedFilters.elevator || false;
+                                this.filters.privateOnly = savedFilters.privateOnly !== undefined ? savedFilters.privateOnly : true;
+                                this.filters.hideOverpriced = savedFilters.hideOverpriced !== undefined ? savedFilters.hideOverpriced : true;
+
+                                window.Telegram.WebApp.showPopup({
+                                    title: '✅ Filters Loaded!',
+                                    message: 'Your saved preferences have been restored.',
+                                    buttons: [{ type: 'ok' }]
+                                });
+                            } catch (e) {
+                                console.error('Failed to parse saved filters:', e);
+                            }
+                        } else {
+                            console.log('No saved filters found, using defaults');
+                        }
+                    });
                 },
 
                 removeFavorite(id) {
