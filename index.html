@@ -717,6 +717,7 @@
                 saveFilters() {
                     const data = {
                         max_price: this.filters.maxPrice,
+                        min_rooms: 1,  // Always 1 when using exact_rooms
                         exact_rooms: this.filters.exactRooms,  // null or number
                         city: this.filters.city,
                         neighborhood: this.filters.neighborhood,
@@ -728,6 +729,9 @@
                             elevator: this.filters.elevator
                         }
                     };
+
+                    // DEBUG: Log what we're sending
+                    console.log('📤 Sending filters to bot:', data);
 
                     // Show in-app notification
                     window.Telegram.WebApp.showPopup({
