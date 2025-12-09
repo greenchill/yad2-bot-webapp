@@ -814,14 +814,13 @@
                         buttons: [{ type: 'ok' }]
                     });
 
-                    // ✅ SAVE to Telegram Cloud Storage
-                    window.Telegram.WebApp.CloudStorage.setItem('filters', JSON.stringify(this.filters), (error) => {
-                        if (error) {
-                            console.error('Failed to save to Cloud Storage:', error);
-                        } else {
-                            console.log('✅ Saved to Cloud Storage:', this.filters);
-                        }
-                    });
+                    // ✅ SAVE to localStorage (100% reliable)
+                    try {
+                        localStorage.setItem('yad2_filters', JSON.stringify(this.filters));
+                        console.log('✅ Saved to localStorage:', this.filters);
+                    } catch (error) {
+                        console.error('Failed to save to localStorage:', error);
+                    }
 
                     // Send to bot
                     window.Telegram.WebApp.sendData(JSON.stringify(data));
@@ -831,44 +830,39 @@
                 },
 
                 loadSavedFilters() {
-                    // ✅ LOAD from Telegram Cloud Storage
-                    console.log('📥 Loading saved filters from Cloud Storage...');
+                    // ✅ LOAD from localStorage (100% reliable)
+                    console.log('📥 Loading saved filters from localStorage...');
 
-                    window.Telegram.WebApp.CloudStorage.getItem('filters', (error, value) => {
-                        if (error) {
-                            console.error('Failed to load from Cloud Storage:', error);
-                            console.log('Using default filters');
-                            return;
-                        }
+                    try {
+                        const saved = localStorage.getItem('yad2_filters');
 
-                        if (value) {
-                            try {
-                                const savedFilters = JSON.parse(value);
-                                console.log('✅ Loaded saved filters:', savedFilters);
+                        if (saved) {
+                            const savedFilters = JSON.parse(saved);
+                            console.log('✅ Loaded saved filters:', savedFilters);
 
-                                // Update Vue reactive data
-                                this.filters.maxPrice = savedFilters.maxPrice || 12000;
-                                this.filters.exactRooms = savedFilters.exactRooms || null;
-                                this.filters.city = savedFilters.city || '5000';
-                                this.filters.neighborhood = savedFilters.neighborhood || null;
-                                this.filters.parking = savedFilters.parking || false;
-                                this.filters.balcony = savedFilters.balcony || false;
-                                this.filters.elevator = savedFilters.elevator || false;
-                                this.filters.privateOnly = savedFilters.privateOnly !== undefined ? savedFilters.privateOnly : true;
-                                this.filters.hideOverpriced = savedFilters.hideOverpriced !== undefined ? savedFilters.hideOverpriced : true;
+                            // Update Vue reactive data
+                            this.filters.maxPrice = savedFilters.maxPrice || 12000;
+                            this.filters.exactRooms = savedFilters.exactRooms || null;
+                            this.filters.city = savedFilters.city || '5000';
+                            this.filters.neighborhood = savedFilters.neighborhood || null;
+                            this.filters.parking = savedFilters.parking || false;
+                            this.filters.balcony = savedFilters.balcony || false;
+                            this.filters.elevator = savedFilters.elevator || false;
+                            this.filters.privateOnly = savedFilters.privateOnly !== undefined ? savedFilters.privateOnly : true;
+                            this.filters.hideOverpriced = savedFilters.hideOverpriced !== undefined ? savedFilters.hideOverpriced : true;
 
-                                window.Telegram.WebApp.showPopup({
-                                    title: '✅ Filters Loaded!',
-                                    message: 'Your saved preferences have been restored.',
-                                    buttons: [{ type: 'ok' }]
-                                });
-                            } catch (e) {
-                                console.error('Failed to parse saved filters:', e);
-                            }
+                            // Only show popup if filters were actually loaded
+                            window.Telegram.WebApp.showPopup({
+                                title: '✅ Filters Loaded!',
+                                message: 'Your saved preferences have been restored.',
+                                buttons: [{ type: 'ok' }]
+                            });
                         } else {
                             console.log('No saved filters found, using defaults');
                         }
-                    });
+                    } catch (e) {
+                        console.error('Failed to load saved filters:', e);
+                    }
                 },
 
                 removeFavorite(id) {
