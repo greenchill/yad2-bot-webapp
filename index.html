@@ -3,22 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yad2 Sniper - Filters</title>
+    <title>Yad2 Sniper - Super App</title>
+
+    <!-- Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Range slider styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y;
+        }
+
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .nav-item.active {
+            color: #3b82f6;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Range Slider */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
             height: 6px;
             border-radius: 5px;
-            background: #3b82f6;
+            background: #334155;
             outline: none;
         }
 
@@ -28,7 +107,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #2563eb;
+            background: #3b82f6;
             cursor: pointer;
         }
 
@@ -36,164 +115,589 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #2563eb;
+            background: #3b82f6;
             cursor: pointer;
         }
 
-        /* Chip selection */
+        /* Chip */
         .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: #1e293b;
+            border: 2px solid #334155;
+            cursor: pointer;
             transition: all 0.2s;
+            font-weight: 600;
         }
 
         .chip.selected {
             background: #3b82f6;
+            border-color: #3b82f6;
             color: white;
-            transform: scale(1.05);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #334155;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle.active {
+            background: #3b82f6;
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle.active .toggle-thumb {
+            left: 27px;
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Map Container */
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Card */
+        .card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #334155;
+        }
+
+        /* Button */
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #334155;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white p-4">
-    <div class="max-w-md mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold mb-2">🏠 Search Filters</h1>
-            <p class="text-gray-400">Set your preferences for Tel Aviv apartments</p>
-        </div>
-
-        <!-- Price Range -->
-        <div class="mb-6 bg-gray-800 p-4 rounded-lg">
-            <label class="block text-sm font-semibold mb-2">💰 Max Price</label>
-            <div class="flex items-center gap-4">
-                <span class="text-blue-400 font-mono text-lg">₪<span id="priceDisplay">10,000</span></span>
-            </div>
-            <input
-                type="range"
-                id="maxPrice"
-                min="3000"
-                max="25000"
-                step="500"
-                value="10000"
-                class="mt-3"
-            />
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                <span>₪3K</span>
-                <span>₪25K</span>
-            </div>
-        </div>
-
-        <!-- Rooms Selection -->
-        <div class="mb-6 bg-gray-800 p-4 rounded-lg">
-            <label class="block text-sm font-semibold mb-3">🛏 Minimum Rooms</label>
-            <div class="grid grid-cols-4 gap-2">
-                <button class="chip selected bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-bold" data-rooms="1">
-                    1
-                </button>
-                <button class="chip bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-bold" data-rooms="2">
-                    2
-                </button>
-                <button class="chip bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-bold" data-rooms="3">
-                    3
-                </button>
-                <button class="chip bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-bold" data-rooms="4">
-                    4+
-                </button>
-            </div>
-        </div>
-
-        <!-- Private Only Toggle -->
-        <div class="mb-6 bg-gray-800 p-4 rounded-lg">
-            <label class="flex items-center justify-between cursor-pointer">
-                <div>
-                    <span class="text-sm font-semibold">🚫 Private Owners Only</span>
-                    <p class="text-xs text-gray-400 mt-1">Hide listings from agents/agencies</p>
+<body>
+    <div id="app">
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- TAB 1: Home (Scanner) -->
+            <div v-show="activeTab === 'home'" class="p-4">
+                <!-- Header -->
+                <div class="card mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h1 class="text-xl font-bold flex items-center">
+                            <span class="pulse mr-2">🟢</span> Radar Status
+                        </h1>
+                        <span class="text-sm text-gray-400">{{ radarStatus }}</span>
+                    </div>
+                    <p class="text-sm text-gray-400">
+                        Scanned <span class="font-bold text-white">{{ stats.scanned }}</span> listings today.
+                        Found <span class="font-bold text-green-400">{{ stats.matches }}</span> matches.
+                    </p>
                 </div>
-                <div class="relative">
-                    <input type="checkbox" id="privateOnly" class="sr-only">
-                    <div class="toggle-bg w-14 h-8 bg-gray-600 rounded-full"></div>
+
+                <!-- Filters Section -->
+                <div class="space-y-4">
+                    <!-- Price Range -->
+                    <div class="card">
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">
+                            💰 Price Range
+                        </label>
+                        <div class="space-y-2">
+                            <input
+                                type="range"
+                                v-model.number="filters.minPrice"
+                                min="3000"
+                                max="25000"
+                                step="500"
+                            >
+                            <input
+                                type="range"
+                                v-model.number="filters.maxPrice"
+                                min="3000"
+                                max="25000"
+                                step="500"
+                            >
+                            <div class="flex justify-between text-sm mt-2">
+                                <span class="font-bold">₪{{ filters.minPrice.toLocaleString() }}</span>
+                                <span class="text-gray-400">to</span>
+                                <span class="font-bold">₪{{ filters.maxPrice.toLocaleString() }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rooms -->
+                    <div class="card">
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">
+                            🛏 Minimum Rooms
+                        </label>
+                        <div class="flex gap-2">
+                            <div
+                                v-for="room in [1, 2, 3, 4]"
+                                :key="room"
+                                @click="filters.minRooms = room"
+                                class="chip"
+                                :class="{ 'selected': filters.minRooms === room }"
+                            >
+                                {{ room }}{{ room === 4 ? '+' : '' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifestyle Features -->
+                    <div class="card">
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">
+                            ✨ Lifestyle Features
+                        </label>
+                        <div class="space-y-2">
+                            <label class="flex items-center justify-between">
+                                <span>🅿️ Parking</span>
+                                <div
+                                    @click="filters.parking = !filters.parking"
+                                    class="toggle"
+                                    :class="{ 'active': filters.parking }"
+                                >
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span>☀️ Balcony</span>
+                                <div
+                                    @click="filters.balcony = !filters.balcony"
+                                    class="toggle"
+                                    :class="{ 'active': filters.balcony }"
+                                >
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span>🛗 Elevator</span>
+                                <div
+                                    @click="filters.elevator = !filters.elevator"
+                                    class="toggle"
+                                    :class="{ 'active': filters.elevator }"
+                                >
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Private Only Toggle -->
+                    <div class="card">
+                        <label class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold">🏠 Private Owners Only</div>
+                                <div class="text-xs text-gray-400">Hide listings from agents/agencies</div>
+                            </div>
+                            <div
+                                @click="filters.privateOnly = !filters.privateOnly"
+                                class="toggle"
+                                :class="{ 'active': filters.privateOnly }"
+                            >
+                                <div class="toggle-thumb"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Save Button -->
+                    <button @click="saveFilters" class="btn-primary">
+                        Save & Sync Radar 🔔
+                    </button>
                 </div>
-            </label>
+            </div>
+
+            <!-- TAB 2: Map -->
+            <div v-show="activeTab === 'map'" style="height: 100%;">
+                <div id="map"></div>
+            </div>
+
+            <!-- TAB 3: Favorites -->
+            <div v-show="activeTab === 'favorites'" class="p-4">
+                <h1 class="text-2xl font-bold mb-4">❤️ My Favorites</h1>
+
+                <div v-if="favorites.length === 0" class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <p class="text-lg">No favorites yet</p>
+                    <p class="text-sm mt-2">Like a listing in the bot to see it here</p>
+                </div>
+
+                <div v-else class="space-y-3">
+                    <div v-for="listing in favorites" :key="listing.id" class="card">
+                        <div class="flex gap-3">
+                            <img :src="listing.photo" class="w-20 h-20 object-cover rounded-lg">
+                            <div class="flex-1">
+                                <div class="font-bold text-lg">₪{{ listing.price.toLocaleString() }}</div>
+                                <div class="text-sm text-gray-400">{{ listing.address }}</div>
+                                <div class="text-xs text-gray-500">{{ listing.rooms }} rooms</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="btn-secondary flex-1">
+                                <i class="fas fa-phone mr-1"></i> Call
+                            </button>
+                            <button class="btn-secondary flex-1">
+                                <i class="fas fa-edit mr-1"></i> Note
+                            </button>
+                            <button @click="removeFavorite(listing.id)" class="btn-secondary">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Profile -->
+            <div v-show="activeTab === 'profile'" class="p-4">
+                <h1 class="text-2xl font-bold mb-4">👤 Profile</h1>
+
+                <!-- User Card -->
+                <div class="card mb-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl">
+                            {{ userInitials }}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-bold text-lg">{{ userName }}</div>
+                            <div class="text-sm text-gray-400">ID: {{ userId }}</div>
+                        </div>
+                        <div v-if="isVip" class="text-2xl">👑</div>
+                    </div>
+                    <div class="text-center py-2 px-4 rounded-lg" :class="isVip ? 'bg-yellow-900' : 'bg-gray-700'">
+                        <span class="font-bold">{{ isVip ? 'VIP Plan' : 'Free Plan' }}</span>
+                    </div>
+                </div>
+
+                <!-- Upgrade Section -->
+                <div v-if="!isVip" class="card mb-4 bg-gradient-to-r from-blue-900 to-purple-900">
+                    <div class="text-center">
+                        <div class="text-xl font-bold mb-2">⚡ Upgrade to VIP</div>
+                        <p class="text-sm text-gray-300 mb-3">
+                            Get faster alerts & WhatsApp support
+                        </p>
+                        <button class="btn-primary">
+                            Upgrade Now - ₪99/month
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Referral System -->
+                <div class="card mb-4">
+                    <div class="font-bold text-lg mb-2">🎁 Invite Friends</div>
+                    <p class="text-sm text-gray-400 mb-3">
+                        Get +3 days VIP for each friend who joins!
+                    </p>
+                    <div class="flex gap-2">
+                        <input
+                            type="text"
+                            :value="referralLink"
+                            readonly
+                            class="flex-1 px-3 py-2 bg-gray-800 rounded-lg text-sm"
+                        >
+                        <button @click="copyReferralLink" class="btn-secondary">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        Invited: {{ referralCount }} friends
+                    </div>
+                </div>
+
+                <!-- Landlord Toggle -->
+                <div class="card mb-4">
+                    <label class="flex items-center justify-between mb-3">
+                        <div>
+                            <div class="font-semibold">🏠 I am a Landlord</div>
+                            <div class="text-xs text-gray-400">Access smart valuation tools</div>
+                        </div>
+                        <div
+                            @click="isLandlord = !isLandlord"
+                            class="toggle"
+                            :class="{ 'active': isLandlord }"
+                        >
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </label>
+
+                    <div v-if="isLandlord" class="pt-3 border-t border-gray-700">
+                        <div class="font-semibold mb-2">📊 Smart Valuation</div>
+                        <input
+                            type="text"
+                            v-model="valuation.address"
+                            placeholder="Enter address..."
+                            class="w-full px-3 py-2 bg-gray-800 rounded-lg text-sm mb-2"
+                        >
+                        <select v-model="valuation.rooms" class="w-full px-3 py-2 bg-gray-800 rounded-lg text-sm mb-3">
+                            <option value="">Select rooms</option>
+                            <option v-for="r in [1,2,3,4,5]" :value="r">{{ r }} rooms</option>
+                        </select>
+                        <button @click="calculateValuation" class="btn-primary">
+                            Calculate Price
+                        </button>
+                        <div v-if="valuation.estimated" class="mt-3 text-center">
+                            <div class="text-sm text-gray-400">Estimated Value:</div>
+                            <div class="text-2xl font-bold text-green-400">
+                                ₪{{ valuation.estimated.toLocaleString() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Info Box -->
-        <div class="mb-6 bg-blue-900/30 border border-blue-500/30 p-4 rounded-lg">
-            <p class="text-sm text-blue-300">
-                ℹ️ You'll receive instant notifications when new apartments matching your criteria are posted on Yad2.
-            </p>
-        </div>
-
-        <!-- Save Button (shown at bottom via Telegram) -->
-        <div class="text-center text-gray-500 text-sm">
-            Click "Save Filters" button below ⬇️
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div
+                v-for="tab in tabs"
+                :key="tab.id"
+                @click="activeTab = tab.id"
+                class="nav-item"
+                :class="{ 'active': activeTab === tab.id }"
+            >
+                <i :class="tab.icon"></i>
+                <span>{{ tab.label }}</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // Initialize Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.setText('Save Filters 🔔');
-        tg.MainButton.show();
+        const { createApp } = Vue;
 
-        // State
-        let selectedRooms = 1;
-        let privateOnly = false;
-        let maxPrice = 10000;
+        createApp({
+            data() {
+                return {
+                    // Navigation
+                    activeTab: 'home',
+                    tabs: [
+                        { id: 'home', label: 'Home', icon: 'fas fa-home' },
+                        { id: 'map', label: 'Map', icon: 'fas fa-map-marked-alt' },
+                        { id: 'favorites', label: 'Favorites', icon: 'fas fa-heart' },
+                        { id: 'profile', label: 'Profile', icon: 'fas fa-user' }
+                    ],
 
-        // Price slider
-        const priceSlider = document.getElementById('maxPrice');
-        const priceDisplay = document.getElementById('priceDisplay');
+                    // Stats
+                    radarStatus: 'Active',
+                    stats: {
+                        scanned: 1240,
+                        matches: 12
+                    },
 
-        priceSlider.addEventListener('input', (e) => {
-            maxPrice = parseInt(e.target.value);
-            priceDisplay.textContent = maxPrice.toLocaleString();
-        });
+                    // Filters
+                    filters: {
+                        minPrice: 5000,
+                        maxPrice: 12000,
+                        minRooms: 2,
+                        parking: false,
+                        balcony: false,
+                        elevator: false,
+                        privateOnly: true
+                    },
 
-        // Room chips
-        const roomChips = document.querySelectorAll('.chip');
-        roomChips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                roomChips.forEach(c => c.classList.remove('selected'));
-                chip.classList.add('selected');
-                selectedRooms = parseInt(chip.dataset.rooms);
-            });
-        });
+                    // Favorites
+                    favorites: [
+                        {
+                            id: 1,
+                            photo: 'https://via.placeholder.com/80',
+                            price: 6500,
+                            address: 'Dizengoff St. 125, Tel Aviv',
+                            rooms: 3
+                        },
+                        {
+                            id: 2,
+                            photo: 'https://via.placeholder.com/80',
+                            price: 8200,
+                            address: 'Rothschild Blvd. 44, Tel Aviv',
+                            rooms: 4
+                        }
+                    ],
 
-        // Private only toggle
-        const privateCheckbox = document.getElementById('privateOnly');
-        const toggleBg = document.querySelector('.toggle-bg');
+                    // Profile
+                    userName: 'User',
+                    userId: 'Loading...',
+                    userInitials: 'U',
+                    isVip: false,
+                    referralLink: 'https://t.me/YourBot?start=REF123',
+                    referralCount: 3,
+                    isLandlord: false,
 
-        function updateToggle() {
-            if (privateCheckbox.checked) {
-                toggleBg.classList.add('bg-blue-600');
-                toggleBg.classList.remove('bg-gray-600');
-                privateOnly = true;
-            } else {
-                toggleBg.classList.remove('bg-blue-600');
-                toggleBg.classList.add('bg-gray-600');
-                privateOnly = false;
+                    // Valuation
+                    valuation: {
+                        address: '',
+                        rooms: '',
+                        estimated: null
+                    },
+
+                    // Map
+                    map: null
+                }
+            },
+
+            watch: {
+                activeTab(newTab) {
+                    if (newTab === 'map' && !this.map) {
+                        this.$nextTick(() => {
+                            this.initMap();
+                        });
+                    }
+                }
+            },
+
+            mounted() {
+                // Initialize Telegram WebApp
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+
+                // Get user data
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    this.userName = user.first_name || 'User';
+                    this.userId = user.id;
+                    this.userInitials = this.userName.charAt(0).toUpperCase();
+                }
+
+                // Update referral link
+                this.referralLink = `https://t.me/YourBot?start=REF${this.userId}`;
+
+                // Apply theme
+                document.body.style.backgroundColor = tg.themeParams.bg_color || '#0f172a';
+            },
+
+            methods: {
+                saveFilters() {
+                    const data = {
+                        max_price: this.filters.maxPrice,
+                        min_rooms: this.filters.minRooms,
+                        private_only: this.filters.privateOnly,
+                        features: {
+                            parking: this.filters.parking,
+                            balcony: this.filters.balcony,
+                            elevator: this.filters.elevator
+                        }
+                    };
+
+                    // Send to bot
+                    window.Telegram.WebApp.sendData(JSON.stringify(data));
+                },
+
+                removeFavorite(id) {
+                    this.favorites = this.favorites.filter(f => f.id !== id);
+                },
+
+                copyReferralLink() {
+                    navigator.clipboard.writeText(this.referralLink);
+                    window.Telegram.WebApp.showAlert('Link copied!');
+                },
+
+                calculateValuation() {
+                    if (!this.valuation.address || !this.valuation.rooms) {
+                        window.Telegram.WebApp.showAlert('Please fill all fields');
+                        return;
+                    }
+
+                    // Mock calculation
+                    const basePrice = 1000000;
+                    const roomMultiplier = this.valuation.rooms * 200000;
+                    this.valuation.estimated = basePrice + roomMultiplier + Math.random() * 100000;
+                },
+
+                initMap() {
+                    // Create map
+                    this.map = L.map('map').setView([32.0853, 34.7818], 13);
+
+                    // Add tile layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap'
+                    }).addTo(this.map);
+
+                    // Add markers (mock data)
+                    const listings = [
+                        { lat: 32.0853, lng: 34.7818, price: 6500, address: 'Dizengoff St.', cheap: true },
+                        { lat: 32.0753, lng: 34.7718, price: 12000, address: 'Rothschild Blvd.', cheap: false },
+                        { lat: 32.0953, lng: 34.7918, price: 7200, address: 'Ben Yehuda St.', cheap: true },
+                        { lat: 32.0653, lng: 34.7618, price: 15000, address: 'Allenby St.', cheap: false },
+                        { lat: 32.0803, lng: 34.7768, price: 8500, address: 'King George St.', cheap: true }
+                    ];
+
+                    listings.forEach(listing => {
+                        const icon = L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="background: ${listing.cheap ? '#10b981' : '#ef4444'}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white;"></div>`,
+                            iconSize: [24, 24]
+                        });
+
+                        L.marker([listing.lat, listing.lng], { icon })
+                            .addTo(this.map)
+                            .bindPopup(`
+                                <div style="color: black;">
+                                    <b>₪${listing.price.toLocaleString()}</b><br>
+                                    ${listing.address}
+                                </div>
+                            `);
+                    });
+                }
             }
-        }
-
-        toggleBg.addEventListener('click', () => {
-            privateCheckbox.checked = !privateCheckbox.checked;
-            updateToggle();
-        });
-
-        // Main button click
-        tg.MainButton.onClick(() => {
-            const data = {
-                max_price: maxPrice,
-                min_rooms: selectedRooms,
-                private_only: privateOnly
-            };
-
-            // Send data back to bot
-            tg.sendData(JSON.stringify(data));
-        });
-
-        // Set theme colors
-        tg.setHeaderColor('#111827');
-        tg.setBackgroundColor('#111827');
+        }).mount('#app');
     </script>
 </body>
 </html>
