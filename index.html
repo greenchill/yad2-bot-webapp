@@ -286,20 +286,57 @@
                         </div>
                     </div>
 
-                    <!-- Rooms -->
+                    <!-- City Selector -->
                     <div class="card">
                         <label class="block text-sm font-semibold mb-3 text-gray-300">
-                            🛏 Minimum Rooms
+                            🏙️ City
                         </label>
-                        <div class="flex gap-2">
+                        <select v-model="filters.city" class="w-full px-4 py-3 bg-gray-800 rounded-lg text-white">
+                            <option value="5000">Tel Aviv (תל אביב)</option>
+                            <option value="8600">Jerusalem (ירושלים)</option>
+                            <option value="6200">Haifa (חיפה)</option>
+                            <option value="6300">Netanya (נתניה)</option>
+                            <option value="7900">Rishon LeZion (ראשון לציון)</option>
+                        </select>
+                    </div>
+
+                    <!-- Neighborhood Selector (Tel Aviv only) -->
+                    <div v-if="filters.city === '5000'" class="card">
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">
+                            📍 Neighborhood (Optional)
+                        </label>
+                        <select v-model="filters.neighborhood" class="w-full px-4 py-3 bg-gray-800 rounded-lg text-white">
+                            <option :value="null">All Neighborhoods</option>
+                            <option value="florentin">Florentin (פלורנטין)</option>
+                            <option value="neve-tzedek">Neve Tzedek (נווה צדק)</option>
+                            <option value="rothschild">Rothschild Area (רוטשילד)</option>
+                            <option value="dizengoff">Dizengoff Area (דיזנגוף)</option>
+                            <option value="old-north">Old North (הצפון הישן)</option>
+                            <option value="jaffa">Jaffa (יפו)</option>
+                        </select>
+                    </div>
+
+                    <!-- Exact Rooms -->
+                    <div class="card">
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">
+                            🛏 Number of Rooms
+                        </label>
+                        <div class="flex gap-2 flex-wrap">
                             <div
-                                v-for="room in [1, 2, 3, 4]"
-                                :key="room"
-                                @click="filters.minRooms = room"
+                                @click="filters.exactRooms = null"
                                 class="chip"
-                                :class="{ 'selected': filters.minRooms === room }"
+                                :class="{ 'selected': filters.exactRooms === null }"
                             >
-                                {{ room }}{{ room === 4 ? '+' : '' }}
+                                Any
+                            </div>
+                            <div
+                                v-for="room in [1, 2, 3, 4, 5]"
+                                :key="room"
+                                @click="filters.exactRooms = room"
+                                class="chip"
+                                :class="{ 'selected': filters.exactRooms === room }"
+                            >
+                                {{ room }}
                             </div>
                         </div>
                     </div>
@@ -354,6 +391,23 @@
                                 @click="filters.privateOnly = !filters.privateOnly"
                                 class="toggle"
                                 :class="{ 'active': filters.privateOnly }"
+                            >
+                                <div class="toggle-thumb"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Hide Overpriced Toggle -->
+                    <div class="card">
+                        <label class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold">💸 Hide Overpriced</div>
+                                <div class="text-xs text-gray-400">Only show Fair Price and Hot Deal listings</div>
+                            </div>
+                            <div
+                                @click="filters.hideOverpriced = !filters.hideOverpriced"
+                                class="toggle"
+                                :class="{ 'active': filters.hideOverpriced }"
                             >
                                 <div class="toggle-thumb"></div>
                             </div>
@@ -546,11 +600,14 @@
                     filters: {
                         minPrice: 5000,
                         maxPrice: 12000,
-                        minRooms: 2,
+                        exactRooms: null,  // null = Any, or 1,2,3,4,5
+                        city: '5000',  // Tel Aviv
+                        neighborhood: null,  // neighborhood ID or null
                         parking: false,
                         balcony: false,
                         elevator: false,
-                        privateOnly: true
+                        privateOnly: true,
+                        hideOverpriced: true  // NEW: hide overpriced listings
                     },
 
                     // Favorites
@@ -627,8 +684,11 @@
                 saveFilters() {
                     const data = {
                         max_price: this.filters.maxPrice,
-                        min_rooms: this.filters.minRooms,
+                        exact_rooms: this.filters.exactRooms,  // null or number
+                        city: this.filters.city,
+                        neighborhood: this.filters.neighborhood,
                         private_only: this.filters.privateOnly,
+                        hide_overpriced: this.filters.hideOverpriced,
                         features: {
                             parking: this.filters.parking,
                             balcony: this.filters.balcony,
